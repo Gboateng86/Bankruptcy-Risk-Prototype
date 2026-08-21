@@ -26,8 +26,6 @@ import joblib
 import sys
 import sklearn
 
-if not hasattr(sklearn, '_loss'):
-  sys.modules['sklearn._loss'] = sys.modules['sklearn.ensemble._gb_losses']
   pipeline_bundle = joblib.load("trained_pipeline_final.joblib")
 scaler = pipeline_bundle["scaler"]
 all_feature_columns = pipeline_bundle["all_feature_columns"]
