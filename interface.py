@@ -22,9 +22,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import joblib
+import pickle
 
-pipeline_bundle = joblib.load("trained_pipeline_final.joblib")
+with open("trained_pipeline_final.joblib", "rb") as f:
+  pipeline_bundle = pickle.load(f)
 scaler = pipeline_bundle["scaler"]
 all_feature_columns = pipeline_bundle["all_feature_columns"]
 selected_features = pipeline_bundle["selected_features"]
