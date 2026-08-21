@@ -22,10 +22,13 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import pickle
+import joblib
+import sys
+import sklearn
 
-with open("trained_pipeline_final.joblib", "rb") as f:
-  pipeline_bundle = pickle.load(f)
+if not hasattr(sklearn, '_loss'):
+  sys.modules['sklearn._loss'] = sys.modules['sklearn.ensemble._gb_losses']
+  pipeline_bundle = joblib.load("trained_pipeline_final.joblib")
 scaler = pipeline_bundle["scaler"]
 all_feature_columns = pipeline_bundle["all_feature_columns"]
 selected_features = pipeline_bundle["selected_features"]
