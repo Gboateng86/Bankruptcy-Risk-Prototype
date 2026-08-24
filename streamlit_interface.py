@@ -2,12 +2,10 @@
 STEP 3: The Streamlit Web App (the "prototype" deliverable)
 This loads the trained pipeline saved in Step 2, lets someone type in a
 company's financial figures, and shows a bankruptcy risk result.
-
 This version includes three additions beyond a plain text result:
   1. A bar chart comparing the three experts' opinions and the final result
   2. A feature importance chart, showing which figures mattered most overall
   3. A plain-language "About the models" expandable section
-
 To run this for real:  streamlit run step3_streamlit_app.py
 """
 
@@ -21,8 +19,7 @@ import joblib
 
 # @st.cache_resource tells Streamlit to load the trained models into memory
 # once and reuse them, rather than reloading on every user interaction. Without
-# this, each click reloads the whole pipeline, which quickly exhausts the
-# memory available on Streamlit Community Cloud's free tier.
+# this, each click reloads the whole pipeline.
 @st.cache_resource
 def load_pipeline():
     return joblib.load("trained_pipeline_final.joblib")
@@ -113,6 +110,7 @@ st.caption(
 
 # ADDITION 2: feature importance chart - shown up front, since it
 # describes the model in general rather than any one prediction.
+
 st.subheader("Which financial figures matter most, overall")
 st.caption(
     "This chart is based on the training data as a whole, not the specific "
@@ -135,12 +133,14 @@ plt.close(fig_imp)   # free the figure's memory
 st.subheader("Enter the company's financial figures")
 st.caption("Figures are in the same units as the training data (millions of US dollars).")
 
+# ---------------------------------------------------------------
 # ADDITION 4: example companies, drawn from the real, unseen test
 # set, so a UAT participant does not need to type in 18 numbers by
 # hand. Selecting an example fills every field automatically; the
 # true outcome (bankrupt or not) is revealed only after a prediction
 # is made, so participants can compare the model's answer to what
 # actually happened.
+# ---------------------------------------------------------------
 EXAMPLE_COMPANIES = {
     "-- Enter your own figures --": None,
     "Example A": {
@@ -191,6 +191,12 @@ elif chosen_example == "-- Enter your own figures --" and st.session_state.get("
 
 user_values = {}
 
+# Give every input box a starting value of 0.0 once, before the widgets are
+# created.
+for feat in all_feature_columns:
+    if f"input_{feat}" not in st.session_state:
+        st.session_state[f"input_{feat}"] = 0.0
+
 # Render the inputs grouped by financial category rather than as one
 # undifferentiated block of 18 boxes. Each group gets its own heading, and
 # fields within a group are laid out two-per-row.
@@ -202,7 +208,7 @@ for group_name, group_features in FEATURE_GROUPS.items():
             with cols[j]:
                 label = f"{feat} - {FEATURE_LABELS.get(feat, '')}"
                 user_values[feat] = st.number_input(
-                    label, value=0.0, format="%.3f", key=f"input_{feat}"
+                    label, format="%.3f", key=f"input_{feat}"
                 )
     st.write("")  # small gap between groups
 
@@ -231,7 +237,7 @@ if st.button("Predict Bankruptcy Risk", type="primary"):
 
     # ---------------------------------------------------------------
     # ADDITION 1: bar chart comparing all three experts plus the
-    # final combined result, instead of plain text sentences only.
+    # final combined result.
     # ---------------------------------------------------------------
     st.write("### What each expert thought, compared to the final result")
     opinions_df = pd.DataFrame({
