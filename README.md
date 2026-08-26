@@ -35,7 +35,11 @@ Random Forest        0.7401   0.2929       0.6353    0.1115
 Gradient Boosting    0.7472   0.1995       0.7910    0.0592
 k-Nearest Neighbours 0.7373   0.3964       0.4419    0.2021
 Stacking ensemble    0.7740   0.5664       0.0530    0.7038
-
+ Model 1: Random Forest
+AUC =   0.7401
+Macro-F1 =0.2929
+Type I =  0.6353
+Type II = 0.1115
 # At Threshold 0.30
 Model                AUC     Macro-F1    Type I    Type II
 Random Forest        0.7401   0.2274       0.7514   0.0488
