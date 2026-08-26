@@ -30,26 +30,30 @@ A page will open in your browser automatically.
 # Results
 Evaluated on 12,282 unseen company-year records (2015-2018):
 # At Threshold 0.40
-# Model 1: Random Forest
+Model 1: Random Forest
 AUC =   0.7401
 Macro-F1 = 0.2929
 Type I = 0.6353
 Type II = 0.1115
-# Model 2 Gradient Boosting
+
+Model 2:  Gradient Boosting
 AUC = 0.7472
 Macro F1= 0.1995
 Type I error = 0.7910
 Type II error = 0.0592
-# Model 3: k- Nearest Neighbours
+
+Model 3: k- Nearest Neighbours
 AUC = 0.7373
 Macro F1 = 0.3964
 Type I error = 0.4419
 Type II error = 0.2021
-# Model 4: Stacking ensemble (Meta-Learner)-Evaluate all the models 
+
+Model 4: Stacking ensemble (Meta-Learner)-Evaluate all the models 
 AUC = 0.7740
 Macro F1 = 0.5664
 Type I error = 0.0530
 Type II error = 0.7038
+
 # At Threshold 0.30
 Model                AUC     Macro-F1    Type I    Type II
 Random Forest        0.7401   0.2274       0.7514   0.0488
