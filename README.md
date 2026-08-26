@@ -33,8 +33,8 @@ Evaluated on 12,282 unseen company-year records (2015-2018):
 Model 1: Random Forest
 AUC =   0.7401,
  Macro-F1 = 0.2929,
- Type I = 0.6353,
-Type II = 0.1115
+ Type I error = 0.6353,
+Type II error = 0.1115
 
 Model 2:  Gradient Boosting
 AUC = 0.7472, 
@@ -55,11 +55,29 @@ AUC = 0.7740,
  Type II error = 0.7038
 
 # At Threshold 0.30
-Model                AUC     Macro-F1    Type I    Type II
-Random Forest        0.7401   0.2274       0.7514   0.0488
-Gradient Boosting    0.7472   0.1454       0.8634   0.0383
-k-Nearest Neighbours 0.7373   0.3964       0.4419    0.2021
-Stacking ensemble    0.7740   0.5311       0.1156   0.5923
+Model 1: Random Forest
+AUC =   0.7401,
+ Macro-F1 = 0.2274,
+ Type I error = 0.7514,
+Type II error = 0.0488
+
+Model 2:  Gradient Boosting
+AUC = 0.7472, 
+Macro F1= 0.1454, 
+Type I error = 0.8634, 
+Type II error = 0.0383
+
+Model 3: k- Nearest Neighbours
+AUC = 0.7373,
+ Macro F1 = 0.3964,
+ Type I error = 0.4419,
+ Type II error = 0.2021
+
+Model 4: Stacking ensemble (Meta-Learner)-Evaluate all the models 
+AUC = 0.7740,
+ Macro F1 = 0.5311,
+ Type I error = 0.1156,
+ Type II error = 0.5923
 
 The ensemble outperforms every individual model on Macro-F1, the metric most
 appropriate for imbalanced data. Note that Gradient Boosting's individual
