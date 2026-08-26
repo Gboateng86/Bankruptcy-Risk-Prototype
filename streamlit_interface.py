@@ -1,11 +1,12 @@
 """
 STEP 3: The Streamlit Web App (the "prototype" deliverable)
-This loads the trained pipeline saved in Step 2, lets someone type in a
-company's financial figures, and shows a bankruptcy risk result.
-This version includes three additions beyond a plain text result:
+This loads the trained pipeline saved. A user enters  a company's financial
+ figures, and shows a bankruptcy risk result.
+This version includes three additions:
   1. A bar chart comparing the three experts' opinions and the final result
   2. A feature importance chart, showing which figures mattered most overall
-  3. A plain-language "About the models" expandable section
+  3. An explanation about the models expandable section
+
 To run this for real:  streamlit run step3_streamlit_app.py
 """
 
@@ -19,7 +20,8 @@ import joblib
 
 # @st.cache_resource tells Streamlit to load the trained models into memory
 # once and reuse them, rather than reloading on every user interaction. Without
-# this, each click reloads the whole pipeline.
+# this, each click reloads the whole pipeline, which quickly exhausts the
+# memory available on Streamlit Community Cloud's free tier.
 @st.cache_resource
 def load_pipeline():
     return joblib.load("trained_pipeline_final.joblib")
@@ -48,12 +50,28 @@ FEATURE_LABELS = {
 # The 18 figures grouped the way they appear on a real financial statement,
 # rather than in raw dataset order. This makes the form far easier to work
 # through for anyone familiar with company accounts.
+# Only twelve figures the model actually uses are shown. Feature selection
+# retained these twelve; the remaining six (EBITDA, Net Sales, Total Assets,
+# EBIT, Total Current Liabilities and Total Revenue) were found to be largely
+# redundant, since a regression of Total Assets on the retained twelve gives
+# an R-squared of 0.975, indicating their information is already captured.
+# Asking users to enter figures that do not affect the prediction would be
+# misleading, so they are omitted here and passed to the model as zero, which
+# has no effect on the result because they are discarded after scaling.
 FEATURE_GROUPS = {
-    "Assets \u2013 what the company owns": ["X1", "X5", "X7", "X10"],
-    "Liabilities \u2013 what the company owes": ["X11", "X14", "X17"],
-    "Income and profitability": ["X6", "X9", "X13", "X16", "X4", "X12"],
-    "Costs and other measures": ["X2", "X18", "X3", "X8", "X15"],
+    "Assets \u2013 what the company owns": ["X1", "X5", "X7"],
+    "Liabilities \u2013 what the company owes": ["X11", "X17"],
+    "Income and profitability": ["X6", "X13", "X15"],
+    "Costs and other measures": ["X2", "X18", "X3", "X8"],
 }
+
+# Every figure the trained pipeline expects, in its original order. Figures not
+# shown to the user are sent as zero.
+ALL_MODEL_FEATURES = ["X1","X2","X3","X4","X5","X6","X7","X8","X9",
+                      "X10","X11","X12","X13","X14","X15","X16","X17","X18"]
+
+# The twelve figures actually shown in the form, flattened from FEATURE_GROUPS.
+displayed_features = [f for grp in FEATURE_GROUPS.values() for f in grp]
 
 THRESHOLD_OPTIONS = {
     "Standard - fewer false alarms (threshold 0.40)": 0.40,
@@ -69,9 +87,11 @@ st.write(
     "is not financial advice."
 )
 
+# ---------------------------------------------------------------
 # ADDITION 3: a plain-language explanation of the models used,
 # hidden by default so it does not clutter the page, but available
 # to anyone who wants to understand what is actually happening.
+# ---------------------------------------------------------------
 with st.expander("About the models used in this prediction"):
     st.markdown("""
     This tool does not rely on a single model. Instead, it asks **three
@@ -110,7 +130,6 @@ st.caption(
 
 # ADDITION 2: feature importance chart - shown up front, since it
 # describes the model in general rather than any one prediction.
-
 st.subheader("Which financial figures matter most, overall")
 st.caption(
     "This chart is based on the training data as a whole, not the specific "
@@ -133,14 +152,12 @@ plt.close(fig_imp)   # free the figure's memory
 st.subheader("Enter the company's financial figures")
 st.caption("Figures are in the same units as the training data (millions of US dollars).")
 
-# ---------------------------------------------------------------
 # ADDITION 4: example companies, drawn from the real, unseen test
 # set, so a UAT participant does not need to type in 18 numbers by
 # hand. Selecting an example fills every field automatically; the
 # true outcome (bankrupt or not) is revealed only after a prediction
 # is made, so participants can compare the model's answer to what
 # actually happened.
-# ---------------------------------------------------------------
 EXAMPLE_COMPANIES = {
     "-- Enter your own figures --": None,
     "Example A": {
@@ -177,14 +194,16 @@ st.caption(
 chosen_example = st.selectbox("Load an example company (optional):", list(EXAMPLE_COMPANIES.keys()))
 
 if chosen_example != "-- Enter your own figures --" and st.session_state.get("_loaded_example") != chosen_example:
+    # Only set values for figures actually shown in the form
     for feat, val in EXAMPLE_COMPANIES[chosen_example].items():
-        st.session_state[f"input_{feat}"] = val
+        if feat in displayed_features:
+            st.session_state[f"input_{feat}"] = val
     st.session_state["_loaded_example"] = chosen_example
     st.rerun()
 elif chosen_example == "-- Enter your own figures --" and st.session_state.get("_loaded_example") is not None:
     # Clear previously loaded example values so switching back to manual
     # entry does not leave old figures behind, confusingly.
-    for feat in all_feature_columns:
+    for feat in displayed_features:
         st.session_state[f"input_{feat}"] = 0.0
     st.session_state["_loaded_example"] = None
     st.rerun()
@@ -192,8 +211,10 @@ elif chosen_example == "-- Enter your own figures --" and st.session_state.get("
 user_values = {}
 
 # Give every input box a starting value of 0.0 once, before the widgets are
-# created.
-for feat in all_feature_columns:
+# created. Setting a default here rather than passing value= to number_input
+# avoids Streamlit's warning about a widget having both a default value and a
+# session-state value, which occurs when an example company is loaded.
+for feat in displayed_features:
     if f"input_{feat}" not in st.session_state:
         st.session_state[f"input_{feat}"] = 0.0
 
@@ -213,7 +234,10 @@ for group_name, group_features in FEATURE_GROUPS.items():
     st.write("")  # small gap between groups
 
 if st.button("Predict Bankruptcy Risk", type="primary"):
-    raw_input = np.array([[user_values[f] for f in all_feature_columns]])
+    # Build the full 18-value array the scaler expects. Figures not shown to
+    # the user are sent as zero; they are discarded immediately after scaling,
+    # so their value has no effect on the prediction.
+    raw_input = np.array([[user_values.get(f, 0.0) for f in all_feature_columns]])
     scaled_input = scaler.transform(raw_input)
     selected_idx = [all_feature_columns.index(f) for f in selected_features]
     model_input = scaled_input[:, selected_idx]
@@ -235,10 +259,8 @@ if st.button("Predict Bankruptcy Risk", type="primary"):
         st.success(f"Estimated bankruptcy risk: {risk_percent:.1f}% - LOWER RISK "
                    f"(below the {chosen_threshold:.0%} threshold)")
 
-    # ---------------------------------------------------------------
     # ADDITION 1: bar chart comparing all three experts plus the
-    # final combined result.
-    # ---------------------------------------------------------------
+    # final combined result, instead of plain text sentences only.
     st.write("### What each expert thought, compared to the final result")
     opinions_df = pd.DataFrame({
         "Model": ["Random Forest", "Gradient Boosting", "k-Nearest Neighbours", "FINAL (combined)"],
