@@ -31,15 +31,15 @@ A page will open in your browser automatically.
 Evaluated on 12,282 unseen company-year records (2015-2018):
 # At Threshold 0.40
 Model 1: Random Forest
-AUC =   0.7401
-Macro-F1 = 0.2929
-Type I = 0.6353
+AUC =   0.7401,
+ Macro-F1 = 0.2929,
+ Type I = 0.6353,
 Type II = 0.1115
 
 Model 2:  Gradient Boosting
-AUC = 0.7472
-Macro F1= 0.1995
-Type I error = 0.7910
+AUC = 0.7472, 
+Macro F1= 0.1995, 
+Type I error = 0.7910, 
 Type II error = 0.0592
 
 Model 3: k- Nearest Neighbours
