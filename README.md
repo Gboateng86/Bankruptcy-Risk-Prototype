@@ -43,16 +43,16 @@ Type I error = 0.7910,
 Type II error = 0.0592
 
 Model 3: k- Nearest Neighbours
-AUC = 0.7373
-Macro F1 = 0.3964
-Type I error = 0.4419
-Type II error = 0.2021
+AUC = 0.7373,
+ Macro F1 = 0.3964,
+ Type I error = 0.4419,
+ Type II error = 0.2021
 
 Model 4: Stacking ensemble (Meta-Learner)-Evaluate all the models 
-AUC = 0.7740
-Macro F1 = 0.5664
-Type I error = 0.0530
-Type II error = 0.7038
+AUC = 0.7740,
+ Macro F1 = 0.5664,
+ Type I error = 0.0530,
+ Type II error = 0.7038
 
 # At Threshold 0.30
 Model                AUC     Macro-F1    Type I    Type II
