@@ -1,5 +1,5 @@
 # PROJECT TITLE
-Building an AI-Based Ensemble System for Corporate Bankruptcy Prediction: A Case Study of US-Listed Companies
+#Building an AI-Based Ensemble System for Corporate Bankruptcy Prediction: A Case Study of US-Listed Companies
 MSc Data Analytics with Banking and Finance Research Project. This repository contains the full code for a stacking ensemble that predicts corporate bankruptcy from company financial figures, together with a working web prototype
 
 # What this project does
